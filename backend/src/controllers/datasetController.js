@@ -1,6 +1,7 @@
 const Dataset = require('../models/dataset');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
+const buildFilters = require('../utils/filterBuilder');
 
 // Good to Have 1: API Response Standardization
 const sendSuccess = (res, statusCode, data, message = 'Success') => {
@@ -12,18 +13,10 @@ const sendSuccess = (res, statusCode, data, message = 'Success') => {
   });
 };
 
-// GET all datasets (basic fetch)
+// GET all datasets (basic fetch & dynamic queries)
 exports.getAllDatasets = catchAsync(async (req, res, next) => {
-  // We only fetch non-deleted items
-  const query = { isDeleted: { $ne: true } };
-  
-  // Basic query params (type, repo) if present
-  if (req.query.type) {
-    query['metadata.type'] = req.query.type;
-  }
-  if (req.query.repo) {
-    query['metadata.repo_name'] = req.query.repo;
-  }
+  // Good to Have 12: Build filters dynamically from query parameters
+  const query = buildFilters(req.query);
   
   // Simple pagination
   const page = parseInt(req.query.page, 10) || 1;
