@@ -374,4 +374,121 @@ exports.getDocstringDatasets = catchAsync(async (req, res, next) => {
   await fetchAndSendDatasets(req, res, query, 'Docstring generation datasets retrieved successfully');
 });
 
+// GET Datasets by Task parameter (heuristics regex search)
+exports.getDatasetsByTask = catchAsync(async (req, res, next) => {
+  const { task } = req.params;
+  const regex = new RegExp(task, 'i');
+  
+  const query = {
+    isDeleted: { $ne: true },
+    $or: [
+      { id: regex },
+      { instruction: regex },
+      { input: regex }
+    ]
+  };
+  await fetchAndSendDatasets(req, res, query, `Datasets matching task '${task}' retrieved successfully`);
+});
+
+// GET Datasets by Model parameter (heuristics regex search)
+exports.getDatasetsByModel = catchAsync(async (req, res, next) => {
+  const { model } = req.params;
+  const regex = new RegExp(model, 'i');
+
+  const query = {
+    isDeleted: { $ne: true },
+    $or: [
+      { 'metadata.repo_name': regex },
+      { instruction: regex },
+      { input: regex }
+    ]
+  };
+  await fetchAndSendDatasets(req, res, query, `Datasets matching model '${model}' retrieved successfully`);
+});
+
+// GET Datasets by Framework parameter (heuristics regex search)
+exports.getDatasetsByFramework = catchAsync(async (req, res, next) => {
+  const { framework } = req.params;
+  const regex = new RegExp(framework, 'i');
+
+  const query = {
+    isDeleted: { $ne: true },
+    $or: [
+      { 'metadata.repo_name': regex },
+      { instruction: regex },
+      { output: regex }
+    ]
+  };
+  await fetchAndSendDatasets(req, res, query, `Datasets matching framework '${framework}' retrieved successfully`);
+});
+
+// GET Datasets by Library parameter (heuristics regex search)
+exports.getDatasetsByLibrary = catchAsync(async (req, res, next) => {
+  const { library } = req.params;
+  const regex = new RegExp(library, 'i');
+
+  const query = {
+    isDeleted: { $ne: true },
+    $or: [
+      { 'metadata.repo_name': regex },
+      { 'metadata.file_path': regex },
+      { output: regex }
+    ]
+  };
+  await fetchAndSendDatasets(req, res, query, `Datasets matching library '${library}' retrieved successfully`);
+});
+
+// GET Datasets by Language parameter (heuristics regex search)
+exports.getDatasetsByLanguage = catchAsync(async (req, res, next) => {
+  const { language } = req.params;
+  
+  let query = { isDeleted: { $ne: true } };
+  
+  if (language.toLowerCase() === 'python' || language.toLowerCase() === 'py') {
+    query.$or = [
+      { 'metadata.file_path': /\.py$/i },
+      { 'metadata.repo_name': /python/i }
+    ];
+  } else if (language.toLowerCase() === 'markdown' || language.toLowerCase() === 'md') {
+    query['metadata.doc_type'] = 'md';
+  } else {
+    const regex = new RegExp(language, 'i');
+    query.$or = [
+      { 'metadata.file_path': regex },
+      { instruction: regex },
+      { output: regex }
+    ];
+  }
+
+  await fetchAndSendDatasets(req, res, query, `Datasets matching language '${language}' retrieved successfully`);
+});
+
+// GET Datasets by Category parameter (heuristics regex search)
+exports.getDatasetsByCategory = catchAsync(async (req, res, next) => {
+  const { category } = req.params;
+  let query = { isDeleted: { $ne: true } };
+
+  if (category.toLowerCase() === 'ai') {
+    query.$or = [
+      { 'metadata.repo_name': /transformers|huggingface|llm|gpt|openai|llama|deepseek|keras|pytorch|tensorflow|atomic-agents/i },
+      { instruction: /artificial intelligence|deep learning|neural network|llm|gpt|transformer|openai|ai/i }
+    ];
+  } else if (category.toLowerCase() === 'ml') {
+    query.$or = [
+      { 'metadata.repo_name': /machine-learning|ml|classification|regression|scikit|sklearn|pandas|numpy/i },
+      { instruction: /machine learning|classification|regression|dataset|supervised|unsupervised/i }
+    ];
+  } else {
+    const regex = new RegExp(category, 'i');
+    query.$or = [
+      { 'metadata.type': regex },
+      { 'metadata.code_element': regex },
+      { instruction: regex }
+    ];
+  }
+
+  await fetchAndSendDatasets(req, res, query, `Datasets matching category '${category}' retrieved successfully`);
+});
+
+
 

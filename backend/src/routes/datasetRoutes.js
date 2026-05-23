@@ -35,6 +35,14 @@ router.get('/doc-type/:docType', datasetController.getDatasetsByDocType);
 router.get('/code/:element', datasetController.getDatasetsByCodeElement);
 router.get('/code-element/:element', datasetController.getDatasetsByCodeElement);
 
+// Advanced Parameter Heuristic Routes (Good to Have 12: Dynamic Filter Builder prep)
+router.get('/task/:task', datasetController.getDatasetsByTask);
+router.get('/model/:model', datasetController.getDatasetsByModel);
+router.get('/framework/:framework', datasetController.getDatasetsByFramework);
+router.get('/library/:library', datasetController.getDatasetsByLibrary);
+router.get('/language/:language', datasetController.getDatasetsByLanguage);
+router.get('/category/:category', datasetController.getDatasetsByCategory);
+
 router.route('/:id')
   .get(datasetController.getDatasetById)
   .put(datasetController.updateDataset)
