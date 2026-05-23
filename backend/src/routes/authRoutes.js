@@ -1,23 +1,51 @@
 const express = require('express');
 const authController = require('../controllers/authController');
+const datasetController = require('../controllers/datasetController');
 const { protect } = require('../middlewares/authMiddleware');
+const { authLimiter } = require('../middlewares/rateLimiter');
 
 const router = express.Router();
 
-// Public routes
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/logout', authController.logout);
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
-router.post('/send-otp', authController.sendOTP);
-router.post('/verify-email', authController.verifyEmail);
+// Apply auth rate limiter for authentication endpoints (login, register, forgot-password, reset-password, send-otp)
+router.route('/register')
+  .post(authLimiter, authController.register)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
 
-// Protected routes (Good to Have 17)
-router.use(protect); // Applies protection guard globally to the routes below
+router.route('/login')
+  .post(authLimiter, authController.login)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/logout')
+  .post(authController.logout)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/forgot-password')
+  .post(authLimiter, authController.forgotPassword)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/reset-password')
+  .post(authLimiter, authController.resetPassword)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/send-otp')
+  .post(authLimiter, authController.sendOTP)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/verify-email')
+  .post(authLimiter, authController.verifyEmail)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+// Profile endpoints (with HEAD & OPTIONS) (Route 175-176, 243)
 router.route('/profile')
+  .all(protect)
   .get(authController.getProfile)
-  .patch(authController.updateProfile);
-router.post('/change-password', authController.changePassword);
+  .patch(authController.updateProfile)
+  .head((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).end();
+  })
+  .options(datasetController.optionsHelper(['GET', 'PATCH', 'HEAD', 'OPTIONS']));
+
+router.post('/change-password', protect, authController.changePassword);
 
 module.exports = router;

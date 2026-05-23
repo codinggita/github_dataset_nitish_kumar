@@ -1,14 +1,29 @@
 const express = require('express');
 const analyticsController = require('../controllers/analyticsController');
+const datasetController = require('../controllers/datasetController');
 const { protect, restrictTo } = require('../middlewares/authMiddleware');
+const { analyticsLimiter } = require('../middlewares/rateLimiter');
 
 const router = express.Router();
 
-// Admin analytics route (Route 161)
-router.get('/admin/analytics', protect, restrictTo('admin'), analyticsController.getTypeAnalysis);
+// Apply analytics rate limiter globally to all analytics paths in this router
+router.use(analyticsLimiter);
 
-// Define analytics routes matching: GET /api/v1/analytics/datasets/...
-router.get('/datasets/type-analysis', analyticsController.getTypeAnalysis);
+// Admin analytics route (Route 161)
+router.route('/admin/analytics')
+  .get(protect, restrictTo('admin'), analyticsController.getTypeAnalysis)
+  .options(datasetController.optionsHelper(['GET', 'OPTIONS']));
+
+// Explicit HEAD / OPTIONS for /datasets/type-analysis (Route 242)
+router.route('/datasets/type-analysis')
+  .get(analyticsController.getTypeAnalysis)
+  .head((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).end();
+  })
+  .options(datasetController.optionsHelper(['GET', 'HEAD', 'OPTIONS']));
+
+// Define all other analytics routes
 router.get('/datasets/repo-analysis', analyticsController.getRepoAnalysis);
 router.get('/datasets/source-analysis', analyticsController.getSourceAnalysis);
 router.get('/datasets/framework-analysis', analyticsController.getFrameworkAnalysis);

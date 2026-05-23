@@ -3,28 +3,49 @@ const authController = require('../controllers/authController');
 const datasetController = require('../controllers/datasetController');
 const analyticsController = require('../controllers/analyticsController');
 const { protect } = require('../middlewares/authMiddleware');
+const { authLimiter } = require('../middlewares/rateLimiter');
 
 const router = express.Router();
 
-// Public JWT Utilities
-router.post('/generate-token', authController.generateToken);
-router.post('/verify-token', authController.verifyToken);
-router.post('/refresh-token', authController.refreshToken);
-router.delete('/revoke-token', authController.revokeToken);
+// Apply auth rate limiter for generating/verifying/refreshing tokens
+router.route('/generate-token')
+  .post(authLimiter, authController.generateToken)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/verify-token')
+  .post(authLimiter, authController.verifyToken)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/refresh-token')
+  .post(authLimiter, authController.refreshToken)
+  .options(datasetController.optionsHelper(['POST', 'OPTIONS']));
+
+router.route('/revoke-token')
+  .delete(authController.revokeToken)
+  .options(datasetController.optionsHelper(['DELETE', 'OPTIONS']));
 
 // Protected JWT Routes (Good to Have 17)
-router.use(protect); // Applies protection guard globally below
+router.use(protect);
 
-router.get('/profile', authController.getProfile);
+router.route('/profile')
+  .get(authController.getProfile)
+  .options(datasetController.optionsHelper(['GET', 'OPTIONS']));
 
-router.get('/dashboard', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: `Access granted to JWT dashboard for user: ${req.user.name}`
-  });
-});
+router.route('/dashboard')
+  .get((req, res) => {
+    res.status(200).json({
+      success: true,
+      message: `Access granted to JWT dashboard for user: ${req.user.name}`
+    });
+  })
+  .options(datasetController.optionsHelper(['GET', 'OPTIONS']));
 
-router.get('/private-datasets', datasetController.getAllDatasets);
-router.get('/private-analytics', analyticsController.getTypeAnalysis);
+router.route('/private-datasets')
+  .get(datasetController.getAllDatasets)
+  .options(datasetController.optionsHelper(['GET', 'OPTIONS']));
+
+router.route('/private-analytics')
+  .get(analyticsController.getTypeAnalysis)
+  .options(datasetController.optionsHelper(['GET', 'OPTIONS']));
 
 module.exports = router;
