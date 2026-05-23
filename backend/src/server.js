@@ -7,6 +7,7 @@ const datasetRouter = require('./routes/datasetRoutes');
 const searchRouter = require('./routes/searchRoutes');
 const analyticsRouter = require('./routes/analyticsRoutes');
 const statsRouter = require('./routes/statsRoutes');
+const authRouter = require('./routes/authRoutes');
 
 // Load environment variables
 dotenv.config({ path: './.env' });
@@ -40,6 +41,7 @@ app.use('/api/v1/datasets', datasetRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/analytics', analyticsRouter);
 app.use('/api/v1/stats', statsRouter);
+app.use('/api/v1/auth', authRouter);
 
 // Health Check API (Good to Have 15)
 app.get('/api/v1/system/health', (req, res) => {
