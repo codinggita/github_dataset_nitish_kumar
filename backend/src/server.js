@@ -13,6 +13,8 @@ const jwtRouter = require('./routes/jwtRoutes');
 // Load environment variables
 dotenv.config({ path: './.env' });
 
+const { apiLimiter } = require('./middlewares/rateLimiter');
+
 // Initialize Express
 const app = express();
 
@@ -22,6 +24,8 @@ connectDB();
 // Global Middlewares
 app.use(cors());
 app.use(express.json());
+app.use('/api', apiLimiter);
+
 
 // Custom Request Logging Middleware (Good to Have 2)
 if (process.env.NODE_ENV === 'development') {

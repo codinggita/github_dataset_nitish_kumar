@@ -551,6 +551,158 @@ exports.searchDatasets = catchAsync(async (req, res, next) => {
   await fetchAndSendDatasets(req, res, query, `Search results for keyword '${keyword}' retrieved successfully`);
 });
 
+// GET Random dataset record
+exports.getRandomDataset = catchAsync(async (req, res, next) => {
+  const count = await Dataset.countDocuments({ isDeleted: { $ne: true } });
+  if (count === 0) {
+    return next(new AppError('No datasets found', 404));
+  }
+  const randomIdx = Math.floor(Math.random() * count);
+  const randomDoc = await Dataset.findOne({ isDeleted: { $ne: true } }).skip(randomIdx);
+  sendSuccess(res, 200, randomDoc, 'Random dataset record retrieved successfully');
+});
+
+// GET Trending datasets
+exports.getTrendingDatasets = catchAsync(async (req, res, next) => {
+  const topRepos = await Dataset.aggregate([
+    { $match: { isDeleted: { $ne: true } } },
+    { $group: { _id: '$metadata.repo_name', count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+    { $limit: 5 }
+  ]);
+  const repoNames = topRepos.map(r => r._id);
+  const datasets = await Dataset.find({ 'metadata.repo_name': { $in: repoNames }, isDeleted: { $ne: true } }).limit(20);
+  sendSuccess(res, 200, datasets, 'Trending datasets retrieved successfully');
+});
+
+// GET Recent datasets
+exports.getRecentDatasets = catchAsync(async (req, res, next) => {
+  const limit = parseInt(req.query.limit) || 10;
+  const datasets = await Dataset.find({ isDeleted: { $ne: true } })
+    .sort({ _id: -1 })
+    .limit(limit);
+  sendSuccess(res, 200, datasets, 'Recently added datasets retrieved successfully');
+});
+
+// GET Dataset recommendations
+exports.getDatasetRecommendations = catchAsync(async (req, res, next) => {
+  const { id } = req.query;
+  let query = { isDeleted: { $ne: true } };
+  
+  if (id) {
+    let reference;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      reference = await Dataset.findOne({ _id: id, isDeleted: { $ne: true } });
+    } else {
+      reference = await Dataset.findOne({ id: id, isDeleted: { $ne: true } });
+    }
+    
+    if (reference && reference.metadata) {
+      query = {
+        _id: { $ne: reference._id },
+        isDeleted: { $ne: true },
+        $or: [
+          { 'metadata.type': reference.metadata.type },
+          { 'metadata.repo_name': reference.metadata.repo_name }
+        ]
+      };
+    }
+  }
+  
+  const datasets = await Dataset.find(query).limit(10);
+  sendSuccess(res, 200, datasets, 'Dataset recommendations generated successfully');
+});
+
+// GET Export datasets to CSV
+exports.exportCSV = catchAsync(async (req, res, next) => {
+  const datasets = await Dataset.find({ isDeleted: { $ne: true } }).limit(100);
+  let csv = 'id,instruction,input,output,repo_name,type\n';
+  datasets.forEach(d => {
+    const id = `"${(d.id || '').replace(/"/g, '""')}"`;
+    const instr = `"${(d.instruction || '').replace(/"/g, '""')}"`;
+    const inp = `"${(d.input || '').replace(/"/g, '""')}"`;
+    const out = `"${(d.output || '').replace(/"/g, '""')}"`;
+    const repo = `"${((d.metadata && d.metadata.repo_name) || '').replace(/"/g, '""')}"`;
+    const type = `"${((d.metadata && d.metadata.type) || '').replace(/"/g, '""')}"`;
+    csv += `${id},${instr},${inp},${out},${repo},${type}\n`;
+  });
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename=datasets.csv');
+  res.status(200).send(csv);
+});
+
+// POST Import datasets from JSON
+exports.importJSON = catchAsync(async (req, res, next) => {
+  const datasets = req.body;
+  if (!datasets || (!Array.isArray(datasets) && typeof datasets !== 'object')) {
+    return next(new AppError('Invalid JSON format uploaded. Provide an array of dataset objects or a single dataset object.', 400));
+  }
+  
+  const arrayToImport = Array.isArray(datasets) ? datasets : [datasets];
+  for (const item of arrayToImport) {
+    if (!item.id || !item.instruction || !item.output) {
+      return next(new AppError('Required dataset fields are missing in one or more records (id, instruction, output).', 400));
+    }
+  }
+  
+  const imported = await Dataset.insertMany(arrayToImport);
+  sendSuccess(res, 201, imported, `${imported.length} datasets imported successfully from JSON`);
+});
+
+// HEAD dataset collection
+exports.headDatasets = catchAsync(async (req, res, next) => {
+  const count = await Dataset.estimatedDocumentCount();
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('X-Total-Count', count);
+  res.status(200).end();
+});
+
+// HEAD single dataset
+exports.headDatasetById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  let exists;
+  if (id.match(/^[0-9a-fA-F]{24}$/)) {
+    exists = await Dataset.exists({ _id: id, isDeleted: { $ne: true } });
+  } else {
+    exists = await Dataset.exists({ id: id, isDeleted: { $ne: true } });
+  }
+  if (!exists) {
+    return next(new AppError(`No dataset found with ID: ${id}`, 404));
+  }
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).end();
+});
+
+// HEAD repository datasets
+exports.headDatasetsByRepo = catchAsync(async (req, res, next) => {
+  const repo = req.params.repo || req.params[0];
+  const exists = await Dataset.exists({ 'metadata.repo_name': repo, isDeleted: { $ne: true } });
+  if (!exists) {
+    return next(new AppError(`No datasets found for repository: ${repo}`, 404));
+  }
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).end();
+});
+
+// OPTIONS /datasets
+exports.optionsDatasets = (req, res) => {
+  res.setHeader('Allow', 'GET, POST, HEAD, OPTIONS');
+  res.status(204).end();
+};
+
+// OPTIONS /datasets/:id
+exports.optionsDatasetById = (req, res) => {
+  res.setHeader('Allow', 'GET, PUT, PATCH, DELETE, HEAD, OPTIONS');
+  res.status(204).end();
+};
+
+// General OPTIONS helper
+exports.optionsHelper = (allowedMethods) => (req, res) => {
+  res.setHeader('Allow', allowedMethods.join(', '));
+  res.status(204).end();
+};
+
+
 
 
 
