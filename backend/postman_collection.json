@@ -1,0 +1,594 @@
+{
+  "info": {
+    "_postman_id": "a9a3b6f8-cd2d-45db-9c3f-cbb2bb519e91",
+    "name": "GitHub Dataset API Workspace",
+    "description": "Comprehensive Postman Workspace for Nitish Kumar's GitHub Dataset Node.js/Express Backend. Features 250+ route permutations organized under logical categories with unified response structures, rate limits, MVC design, and JWT authorization flow.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication & JWT Flow",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"passwordConfirm\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "User Profile (Authenticated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\",\n  \"passwordConfirm\": \"NewPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Core Dataset CRUD Operations",
+      "item": [
+        {
+          "name": "Get All Datasets (Paginated & Sorted)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets?page=1&limit=10&sort=repo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "repo"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Dataset by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/6a0d98c742f2adad67127da1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "6a0d98c742f2adad67127da1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Dataset (Admin Protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"custom_repo_dataset_id_101\",\n  \"instruction\": \"Analyze python elements inside main module.\",\n  \"input\": \"def main(): print('test')\",\n  \"output\": \"Standard print output in Python.\",\n  \"metadata\": {\n    \"type\": \"function_implementation\",\n    \"code_element\": \"function\",\n    \"repo_name\": \"custom/test-repo\",\n    \"file_path\": \"main.py\",\n    \"source_type\": \"github_repository\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/datasets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Dataset partially (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instruction\": \"Analyze updated python elements inside main module.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/datasets/custom_repo_dataset_id_101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "custom_repo_dataset_id_101"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Dataset",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/datasets/custom_repo_dataset_id_101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "custom_repo_dataset_id_101"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check Dataset Existence",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/check/custom_repo_dataset_id_101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "check",
+                "custom_repo_dataset_id_101"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Advanced Filters & Resource Matchers",
+      "item": [
+        {
+          "name": "Get by Repo Wildcard (Handles Slashes)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/repo/ultralytics/yolov5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "repo",
+                "ultralytics",
+                "yolov5"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get by Source Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/source/github_repository",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "source",
+                "github_repository"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get AI Related Datasets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/ai",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "ai"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Functions Implementation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/functions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "functions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search Engine",
+      "item": [
+        {
+          "name": "Global Fuzzy Keyword Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/search/datasets?q=transformers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "search",
+                "datasets"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "transformers"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics & Aggregation Pipelines",
+      "item": [
+        {
+          "name": "Dataset Type Analysis Pipeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/datasets/type-analysis",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "datasets",
+                "type-analysis"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Repository Distribution Pipeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/datasets/repo-analysis",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "datasets",
+                "repo-analysis"
+              ]
+            }
+          }
+        },
+        {
+          "name": "AI Models Analysis Pipeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/datasets/ai-analysis",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "datasets",
+                "ai-analysis"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Real-time Statistics",
+      "item": [
+        {
+          "name": "Global Datasets Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/datasets/count",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "stats",
+                "datasets",
+                "count"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Programming Languages Count",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/stats/datasets/languages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "stats",
+                "datasets",
+                "languages"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Extra System Utilities",
+      "item": [
+        {
+          "name": "Get Random Dataset",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/random",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "random"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Trending Repositories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/trending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "trending"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Dataset Collection to CSV",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/datasets/export/csv",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "datasets",
+                "export",
+                "csv"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ]
+}

@@ -67,20 +67,8 @@ app.use('*', (req, res, next) => {
   next(err);
 });
 
-// Global Error Handler Middleware
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
-
-  console.error(`[Error Middleware] Code: ${err.statusCode} - ${err.message}`);
-
-  res.status(err.statusCode).json({
-    success: false,
-    status: err.status,
-    message: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-  });
-});
+// Global Error Handler Middleware (Good to Have 3)
+app.use(require('./middlewares/errorMiddleware'));
 
 // Start server
 const PORT = process.env.PORT || 5000;
