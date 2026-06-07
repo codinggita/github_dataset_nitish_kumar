@@ -7,8 +7,6 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      - key: MONGO_URI
-        sync: false # Render will prompt you to enter your MongoDB connection string when deploying
       - key: JWT_SECRET
         generateValue: true # Render will automatically generate a secure JWT secret key
       - key: JWT_EXPIRES_IN
