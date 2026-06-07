@@ -48,4 +48,15 @@ router.route('/profile')
 
 router.post('/change-password', protect, authController.changePassword);
 
+// Admin-only User CRUD Routes (Role-Based Access Control)
+router.route('/users')
+  .get(protect, authController.restrictTo('admin'), authController.getAllUsers)
+  .post(protect, authController.restrictTo('admin'), authController.createUser)
+  .options(datasetController.optionsHelper(['GET', 'POST', 'OPTIONS']));
+
+router.route('/users/:id')
+  .patch(protect, authController.restrictTo('admin'), authController.updateUserByAdmin)
+  .delete(protect, authController.restrictTo('admin'), authController.deleteUserByAdmin)
+  .options(datasetController.optionsHelper(['PATCH', 'DELETE', 'OPTIONS']));
+
 module.exports = router;

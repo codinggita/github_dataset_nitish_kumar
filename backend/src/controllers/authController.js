@@ -247,3 +247,71 @@ exports.revokeToken = catchAsync(async (req, res, next) => {
   res.status(200).json({ success: true, message: 'Token revoked successfully (mocked)' });
 });
 
+// Admin User CRUD Operations (Good to Have 13 / Dashboard Module Integration)
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find().sort({ createdAt: -1 });
+  res.status(200).json({
+    success: true,
+    message: 'Users retrieved successfully',
+    data: { users }
+  });
+});
+
+exports.createUser = catchAsync(async (req, res, next) => {
+  const { name, email, password, role } = req.body;
+  if (!name || !email || !password) {
+    return next(new AppError('Please provide a name, email and password', 400));
+  }
+  const existing = await User.findOne({ email });
+  if (existing) {
+    return next(new AppError('Email address is already in use', 400));
+  }
+  const newUser = await User.create({
+    name,
+    email,
+    password,
+    role: role || 'user'
+  });
+  newUser.password = undefined;
+  res.status(201).json({
+    success: true,
+    message: 'User created successfully',
+    data: { user: newUser }
+  });
+});
+
+exports.updateUserByAdmin = catchAsync(async (req, res, next) => {
+  const { name, email, role } = req.body;
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+  if (name) user.name = name;
+  if (role) user.role = role;
+  if (email) {
+    const existing = await User.findOne({ email });
+    if (existing && existing.id !== user.id) {
+      return next(new AppError('Email address is already in use by another user', 400));
+    }
+    user.email = email;
+  }
+  await user.save();
+  res.status(200).json({
+    success: true,
+    message: 'User updated successfully',
+    data: { user }
+  });
+});
+
+exports.deleteUserByAdmin = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+  res.status(200).json({
+    success: true,
+    message: 'User deleted successfully',
+    data: null
+  });
+});
+
