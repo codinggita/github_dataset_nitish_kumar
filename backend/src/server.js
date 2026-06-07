@@ -51,6 +51,16 @@ app.use('/api/v1/stats', statsRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/jwt', jwtRouter);
 
+// Welcome Route at Root
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Welcome to the GitHub Dataset API!',
+    healthCheck: '/api/v1/system/health',
+    version: '1.0.0'
+  });
+});
+
 // Health Check API (Good to Have 15)
 app.get('/api/v1/system/health', (req, res) => {
   res.status(200).json({
@@ -61,6 +71,7 @@ app.get('/api/v1/system/health', (req, res) => {
     uptime: process.uptime()
   });
 });
+
 
 // Fallback route for undefined paths
 app.use('*', (req, res, next) => {
