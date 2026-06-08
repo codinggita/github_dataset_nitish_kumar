@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDatasets, setPage, setLimit, setSearchQuery, setSort } from '../store/datasetSlice';
+import { useNavigate } from 'react-router-dom';
+import { fetchDatasets, setPage, setLimit, setSearchQuery, setSort, deleteDataset } from '../store/datasetSlice';
 import DatasetTableRow from '../components/DatasetTableRow';
 import DatasetDetailModal from '../components/DatasetDetailModal';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
 import FilterSidebar from '../components/FilterSidebar';
 import { ChevronLeft, ChevronRight, HelpCircle, Layers, RefreshCw, Search, ArrowUpDown } from 'lucide-react';
 import { showNotification } from '../store/uiSlice';
 
 const DatasetsExplorer = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { user } = useSelector((state) => state.auth);
   const { items, loading, error, page, limit, totalResults, sort, searchQuery, filters } = useSelector((state) => state.datasets);
+  
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedDataset, setSelectedDataset] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  // Delete modal state
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
   const [searchVal, setSearchVal] = useState(searchQuery);
 
   // Synchronize local search input with store search query (e.g. on filter clear)
@@ -89,21 +100,28 @@ const DatasetsExplorer = () => {
   };
 
   const handleEditRecord = (dataset) => {
-    dispatch(
-      showNotification({
-        message: `Edit form modal for record #${dataset.id || dataset._id} will be implemented in PR 12.`,
-        type: 'info',
-      })
-    );
+    navigate(`/explorer/${dataset.id || dataset._id}/edit`);
   };
 
   const handleDeleteRecord = (id) => {
-    dispatch(
-      showNotification({
-        message: `Delete confirmation wizard for record #${id} will be implemented in PR 12 & 13.`,
-        type: 'info',
-      })
-    );
+    setDeleteTargetId(id);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteTargetId) {
+      dispatch(deleteDataset(deleteTargetId))
+        .unwrap()
+        .then(() => {
+          dispatch(showNotification({ message: 'Dataset soft-deleted successfully', type: 'success' }));
+          setIsDeleteOpen(false);
+          setDeleteTargetId(null);
+          dispatch(fetchDatasets());
+        })
+        .catch((err) => {
+          dispatch(showNotification({ message: err || 'Failed to delete dataset', type: 'error' }));
+        });
+    }
   };
 
   const totalPages = Math.ceil(totalResults / limit) || 1;
@@ -119,14 +137,25 @@ const DatasetsExplorer = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => dispatch(fetchDatasets())}
-          disabled={loading}
-          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-2 border border-slate-200 dark:border-dark-border shadow-sm disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh List
-        </button>
+        <div className="flex items-center gap-3">
+          {user && (
+            <button
+              onClick={() => navigate('/explorer/new')}
+              className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-brand-500 shadow-md shadow-brand-500/10"
+            >
+              Add Dataset
+            </button>
+          )}
+          <button
+            onClick={() => dispatch(fetchDatasets())}
+            disabled={loading}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-2 border border-slate-200 dark:border-dark-border shadow-sm disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh List
+          </button>
+        </div>
+
       </div>
 
       {/* Main content grid split */}
@@ -391,7 +420,20 @@ const DatasetsExplorer = () => {
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
       />
+
+      {/* Delete confirmation modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteOpen}
+        onClose={() => {
+          setIsDeleteOpen(false);
+          setDeleteTargetId(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        id={deleteTargetId}
+        loading={loading}
+      />
     </div>
+
   );
 };
 
