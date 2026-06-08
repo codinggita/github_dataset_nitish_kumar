@@ -88,6 +88,42 @@ export const restoreDataset = createAsyncThunk(
   }
 );
 
+export const bulkDeleteDatasets = createAsyncThunk(
+  'datasets/bulkDeleteDatasets',
+  async ({ ids, hard = false }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.delete(`/datasets/bulk-delete?hard=${hard}`, { data: { ids } });
+      return { ids, hard, message: response.data.message };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed bulk delete operation');
+    }
+  }
+);
+
+export const bulkRestoreDatasets = createAsyncThunk(
+  'datasets/bulkRestoreDatasets',
+  async (ids, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post('/datasets/bulk-restore', { ids });
+      return { ids, message: response.data.message };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed bulk restore operation');
+    }
+  }
+);
+
+export const bulkUpdateDatasets = createAsyncThunk(
+  'datasets/bulkUpdateDatasets',
+  async ({ updates, filter, update }, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.patch('/datasets/bulk-update', { updates, filter, update });
+      return { message: response.data.message };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed bulk update operation');
+    }
+  }
+);
+
 
 const initialState = {
   items: [],
@@ -225,6 +261,73 @@ const datasetSlice = createSlice({
         state.successMessage = action.payload.message;
       })
       .addCase(restoreDataset.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Bulk Delete Datasets
+      .addCase(bulkDeleteDatasets.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkDeleteDatasets.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.hard) {
+          state.items = state.items.filter(
+            item => !action.payload.ids.includes(item.id) && !action.payload.ids.includes(item._id)
+          );
+        } else {
+          action.payload.ids.forEach(id => {
+            const index = state.items.findIndex(item => item.id === id || item._id === id);
+            if (index !== -1) {
+              state.items[index].isDeleted = true;
+            }
+          });
+          if (state.filters.deleted === '') {
+            state.items = state.items.filter(
+              item => !action.payload.ids.includes(item.id) && !action.payload.ids.includes(item._id)
+            );
+          }
+        }
+        state.successMessage = action.payload.message;
+      })
+      .addCase(bulkDeleteDatasets.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Bulk Restore Datasets
+      .addCase(bulkRestoreDatasets.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkRestoreDatasets.fulfilled, (state, action) => {
+        state.loading = false;
+        action.payload.ids.forEach(id => {
+          const index = state.items.findIndex(item => item.id === id || item._id === id);
+          if (index !== -1) {
+            state.items[index].isDeleted = false;
+          }
+        });
+        if (state.filters.deleted === 'true') {
+          state.items = state.items.filter(
+            item => !action.payload.ids.includes(item.id) && !action.payload.ids.includes(item._id)
+          );
+        }
+        state.successMessage = action.payload.message;
+      })
+      .addCase(bulkRestoreDatasets.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Bulk Update Datasets
+      .addCase(bulkUpdateDatasets.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkUpdateDatasets.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload.message;
+      })
+      .addCase(bulkUpdateDatasets.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

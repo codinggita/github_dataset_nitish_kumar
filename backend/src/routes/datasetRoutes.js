@@ -69,6 +69,7 @@ router.post('/protected/datasets/:id/restore', protect, restrictTo('admin'), dat
 router.post('/bulk-create', datasetController.bulkCreateDatasets);
 router.patch('/bulk-update', datasetController.bulkUpdateDatasets);
 router.delete('/bulk-delete', datasetController.bulkDeleteDatasets);
+router.post('/bulk-restore', protect, restrictTo('admin'), datasetController.bulkRestoreDatasets);
 router.get('/check/:id', datasetController.checkDatasetExistence);
 
 // Static Filter Routes (Must be before generic route parameters like :id)

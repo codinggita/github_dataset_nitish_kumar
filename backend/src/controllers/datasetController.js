@@ -203,9 +203,15 @@ exports.bulkUpdateDatasets = catchAsync(async (req, res, next) => {
 // DELETE Bulk Delete Datasets (Soft delete)
 exports.bulkDeleteDatasets = catchAsync(async (req, res, next) => {
   const ids = req.body.ids || req.query.ids;
+  const { hard } = req.query;
 
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return next(new AppError('Please provide an array of dataset IDs in "ids"', 400));
+  }
+
+  if (hard === 'true') {
+    const result = await Dataset.deleteMany({ id: { $in: ids } });
+    return sendSuccess(res, 200, result, `${result.deletedCount} datasets permanently deleted in bulk`);
   }
 
   const result = await Dataset.updateMany(
@@ -214,6 +220,22 @@ exports.bulkDeleteDatasets = catchAsync(async (req, res, next) => {
   );
 
   sendSuccess(res, 200, result, `${result.modifiedCount} datasets deleted successfully in bulk`);
+});
+
+// POST Bulk Restore Datasets
+exports.bulkRestoreDatasets = catchAsync(async (req, res, next) => {
+  const ids = req.body.ids;
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return next(new AppError('Please provide an array of dataset IDs in "ids"', 400));
+  }
+
+  const result = await Dataset.updateMany(
+    { id: { $in: ids }, isDeleted: true },
+    { $set: { isDeleted: false } }
+  );
+
+  sendSuccess(res, 200, result, `${result.modifiedCount} datasets restored successfully in bulk`);
 });
 
 // GET Check Dataset Existence

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { fetchDatasets, setPage, setLimit, setSearchQuery, setSort, deleteDataset, restoreDataset } from '../store/datasetSlice';
+import { fetchDatasets, setPage, setLimit, setSearchQuery, setSort, deleteDataset, restoreDataset, bulkDeleteDatasets, bulkRestoreDatasets, bulkUpdateDatasets } from '../store/datasetSlice';
 import DatasetTableRow from '../components/DatasetTableRow';
 import DatasetDetailModal from '../components/DatasetDetailModal';
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import BulkUpdateModal from '../components/BulkUpdateModal';
 import FilterSidebar from '../components/FilterSidebar';
 import { ChevronLeft, ChevronRight, HelpCircle, Layers, RefreshCw, Search, ArrowUpDown } from 'lucide-react';
 import { showNotification } from '../store/uiSlice';
@@ -23,6 +24,11 @@ const DatasetsExplorer = () => {
   // Delete modal state
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
+  const [isBulkDeleteHard, setIsBulkDeleteHard] = useState(false);
+
+  // Bulk edit modal state
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
 
   const [searchVal, setSearchVal] = useState(searchQuery);
 
@@ -45,6 +51,7 @@ const DatasetsExplorer = () => {
   // Fetch datasets when query state dependencies change
   useEffect(() => {
     dispatch(fetchDatasets());
+    setSelectedIds([]); // Clear selection when fetching new data
   }, [
     dispatch,
     page,
@@ -134,6 +141,73 @@ const DatasetsExplorer = () => {
       })
       .catch((err) => {
         dispatch(showNotification({ message: err || 'Failed to restore dataset', type: 'error' }));
+      });
+  };
+
+  const handleBulkDeleteTrigger = (hard = false) => {
+    setIsBulkDelete(true);
+    setIsBulkDeleteHard(hard);
+    setIsDeleteOpen(true);
+  };
+
+  const handleBulkDeleteConfirmAction = () => {
+    dispatch(bulkDeleteDatasets({ ids: selectedIds, hard: isBulkDeleteHard }))
+      .unwrap()
+      .then(() => {
+        dispatch(showNotification({ 
+          message: `${selectedIds.length} datasets ${isBulkDeleteHard ? 'permanently' : 'soft'} deleted successfully`, 
+          type: 'success' 
+        }));
+        setIsDeleteOpen(false);
+        setIsBulkDelete(false);
+        setIsBulkDeleteHard(false);
+        setSelectedIds([]);
+        dispatch(fetchDatasets());
+      })
+      .catch((err) => {
+        dispatch(showNotification({ message: err || 'Failed bulk delete operation', type: 'error' }));
+      });
+  };
+
+  const handleBulkRestore = () => {
+    dispatch(bulkRestoreDatasets(selectedIds))
+      .unwrap()
+      .then(() => {
+        dispatch(showNotification({ 
+          message: `${selectedIds.length} datasets restored successfully`, 
+          type: 'success' 
+        }));
+        setSelectedIds([]);
+        dispatch(fetchDatasets());
+      })
+      .catch((err) => {
+        dispatch(showNotification({ message: err || 'Failed bulk restore operation', type: 'error' }));
+      });
+  };
+
+  const handleBulkUpdateConfirm = ({ field, value }) => {
+    const updateField = ['type', 'language', 'framework', 'category', 'source', 'repo_name'].includes(field)
+      ? `metadata.${field}`
+      : field;
+
+    const updates = selectedIds.map(id => ({
+      id,
+      [updateField]: value
+    }));
+
+    dispatch(bulkUpdateDatasets({ updates }))
+      .unwrap()
+      .then(() => {
+        dispatch(showNotification({ 
+          message: `Bulk update applied to ${selectedIds.length} datasets`, 
+          type: 'success' 
+        }));
+        setIsBulkEditOpen(false);
+        setSelectedIds([]);
+        dispatch(fetchDatasets());
+      })
+      .catch((err) => {
+        dispatch(showNotification({ message: err || 'Failed bulk update operation', type: 'error' }));
       });
   };
 
@@ -441,11 +515,77 @@ const DatasetsExplorer = () => {
         onClose={() => {
           setIsDeleteOpen(false);
           setDeleteTargetId(null);
+          setIsBulkDelete(false);
+          setIsBulkDeleteHard(false);
         }}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={isBulkDelete ? handleBulkDeleteConfirmAction : handleDeleteConfirm}
         id={deleteTargetId}
+        count={isBulkDelete ? selectedIds.length : undefined}
+        isHard={isBulkDeleteHard}
         loading={loading}
       />
+
+      {/* Bulk Update configuration modal */}
+      <BulkUpdateModal
+        isOpen={isBulkEditOpen}
+        onClose={() => setIsBulkEditOpen(false)}
+        onConfirm={handleBulkUpdateConfirm}
+        selectedCount={selectedIds.length}
+        loading={loading}
+      />
+
+      {/* Floating Bulk Actions Control Panel Bar */}
+      {selectedIds.length > 0 && user && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/90 dark:bg-black/85 backdrop-blur-md px-6 py-4 rounded-2xl border border-slate-700/50 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl w-[90%] animate-fade-in">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-brand-500 animate-pulse" />
+            <span className="text-sm font-semibold text-white">
+              {selectedIds.length} dataset records selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <button
+              onClick={() => setIsBulkEditOpen(true)}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-semibold rounded-xl border border-slate-700 transition-colors cursor-pointer"
+            >
+              Bulk Edit
+            </button>
+
+            {filters.deleted === 'true' && user.role === 'admin' ? (
+              <button
+                onClick={handleBulkRestore}
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              >
+                Bulk Restore
+              </button>
+            ) : (
+              <button
+                onClick={() => handleBulkDeleteTrigger(false)}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              >
+                Bulk Soft Delete
+              </button>
+            )}
+
+            {user.role === 'admin' && (
+              <button
+                onClick={() => handleBulkDeleteTrigger(true)}
+                className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              >
+                Bulk Hard Delete
+              </button>
+            )}
+
+            <button
+              onClick={() => setSelectedIds([])}
+              className="px-3 py-1.5 bg-slate-800/40 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-medium rounded-xl transition-colors cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
     </div>
 
   );

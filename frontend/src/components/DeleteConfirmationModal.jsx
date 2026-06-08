@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
-const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, id, loading }) => {
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, id, count, isHard, loading }) => {
   if (!isOpen) return null;
 
   return (
@@ -25,14 +25,25 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, id, loading }) =>
 
         {/* Warning Indicator */}
         <div className="flex items-start gap-4 mt-2">
-          <div className="h-12 w-12 rounded-2xl bg-rose-50 dark:bg-rose-950/20 text-rose-500 flex items-center justify-center flex-shrink-0">
+          <div className={`h-12 w-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${isHard ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-500' : 'bg-amber-50 dark:bg-amber-950/20 text-amber-500'}`}>
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div className="flex-1 space-y-1">
-            <h3 className="font-heading text-lg font-bold text-slate-800 dark:text-slate-100">Delete Dataset</h3>
+            <h3 className="font-heading text-lg font-bold text-slate-800 dark:text-slate-100">
+              {isHard ? 'Permanently Delete' : 'Delete'} {count ? `${count} Datasets` : 'Dataset'}
+            </h3>
             <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
-              Are you sure you want to delete dataset record <span className="font-mono font-bold text-slate-600 dark:text-slate-300">#{id}</span>? 
-              This will perform a soft-delete and mark it as inactive.
+              {count ? (
+                <>
+                  Are you sure you want to delete <span className="font-bold text-slate-600 dark:text-slate-300">{count} selected datasets</span>? 
+                  {isHard ? ' This will permanently remove them from the database. This action cannot be undone!' : ' This will perform a soft-delete and mark them as inactive.'}
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete dataset record <span className="font-mono font-bold text-slate-600 dark:text-slate-300">#{id}</span>? 
+                  This will perform a soft-delete and mark it as inactive.
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -49,9 +60,9 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, id, loading }) =>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-rose-500/10 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+            className={`px-4 py-2 text-white font-semibold text-xs rounded-xl shadow-md transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 ${isHard ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/10' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-500/10'}`}
           >
-            {loading ? 'Deleting...' : 'Confirm Delete'}
+            {loading ? 'Deleting...' : isHard ? 'Confirm Permanent Delete' : 'Confirm Delete'}
           </button>
         </div>
 
