@@ -1,25 +1,10 @@
 import { useEffect } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { Routes, Route } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
-
-// Placeholder Pages for subsequent PRs
-const LoginPlaceholder = () => (
-  <div className="flex-1 flex flex-col justify-center items-center py-20 bg-slate-50 dark:bg-dark-bg min-h-screen text-slate-800 dark:text-slate-100">
-    <h2 className="text-2xl font-bold mb-4">Sign In</h2>
-    <p className="text-slate-500 dark:text-slate-400 mb-6">Credential form and JWT integration will be added in PR 4 & 5.</p>
-    <Link to="/" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-md transition-colors">Back to Home</Link>
-  </div>
-);
-
-const RegisterPlaceholder = () => (
-  <div className="flex-1 flex flex-col justify-center items-center py-20 bg-slate-50 dark:bg-dark-bg min-h-screen text-slate-800 dark:text-slate-100">
-    <h2 className="text-2xl font-bold mb-4">Get Started</h2>
-    <p className="text-slate-500 dark:text-slate-400 mb-6">User registration view and Formik validations will be added in PR 4 & 5.</p>
-    <Link to="/" className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-md transition-colors">Back to Home</Link>
-  </div>
-);
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 const ProfilePlaceholder = () => (
   <div className="flex-1 flex flex-col justify-center items-center py-12">
@@ -76,8 +61,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPlaceholder />} />
-      <Route path="/register" element={<RegisterPlaceholder />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       
       {/* Dashboard Protected Layout Route */}
       <Route element={<Layout />}>
