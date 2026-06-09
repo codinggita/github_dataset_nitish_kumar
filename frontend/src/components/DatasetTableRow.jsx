@@ -1,6 +1,7 @@
 import React from 'react';
 import { Eye, Edit2, Trash2, ExternalLink, RotateCcw } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const GithubIcon = ({ className = "w-3.5 h-3.5" }) => (
   <svg 
@@ -17,8 +18,8 @@ const GithubIcon = ({ className = "w-3.5 h-3.5" }) => (
   </svg>
 );
 
-
 const DatasetTableRow = ({ dataset, onView, onEdit, onDelete, onRestore, isSelected, onSelectToggle }) => {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   
   // Safe extraction of nested metadata fields
@@ -42,49 +43,52 @@ const DatasetTableRow = ({ dataset, onView, onEdit, onDelete, onRestore, isSelec
     switch (metaType.toLowerCase()) {
       case 'function':
       case 'function_implementation':
-        return 'bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 border-blue-100 dark:border-blue-900/30';
+        return 'bg-[#58A6FF]/10 text-[#58A6FF] border-[#58A6FF]/20';
       case 'class':
       case 'class_implementation':
-        return 'bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400 border-purple-100 dark:border-purple-900/30';
+        return 'bg-[#bc8cff]/10 text-[#bc8cff] border-[#bc8cff]/20';
       case 'documentation':
-        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30';
+        return 'bg-[#3FB950]/10 text-[#3FB950] border-[#3FB950]/20';
       case 'readme':
       case 'readme_based':
-        return 'bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400 border-orange-100 dark:border-orange-900/30';
+        return 'bg-[#f0883e]/10 text-[#f0883e] border-[#f0883e]/20';
       default:
-        return 'bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-400 border-slate-100 dark:border-slate-800';
+        return 'bg-[#21262D] text-[#8b949e] border-[#30363D]';
     }
   };
 
   return (
-    <tr className={`border-b border-slate-200/60 dark:border-dark-border/60 hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors group ${isDeleted ? 'bg-slate-100/30 dark:bg-slate-950/10 opacity-60' : ''}`}>
+    <tr className={`border-b border-[#30363D] hover:bg-[#161B22]/60 transition-colors group ${isDeleted ? 'opacity-50 bg-[#161B22]/10' : ''}`}>
       {/* Checkbox column */}
-      <td className="px-6 py-4.5 align-middle">
+      <td className="px-4 py-3 align-middle">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelectToggle && onSelectToggle(id)}
-          className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500/20 outline-none transition-colors cursor-pointer"
+          className="h-3.5 w-3.5 rounded border-[#30363D] text-[#58A6FF] focus:ring-[#58A6FF]/20 outline-none transition-colors cursor-pointer bg-[#0D1117]"
         />
       </td>
 
       {/* Dataset ID badge */}
-      <td className="px-6 py-4.5 align-middle font-mono text-xs font-bold text-slate-500 dark:text-slate-400">
-        #{id}
+      <td className="px-4 py-3 align-middle font-mono text-[10px] font-bold text-[#8B949E]">
+        #{id.substring(Math.max(0, id.length - 6))}
       </td>
 
       {/* Metadata classification type */}
-      <td className="px-6 py-4.5 align-middle">
-        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border capitalize ${getTypeBadge()}`}>
+      <td className="px-4 py-3 align-middle">
+        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border capitalize ${getTypeBadge()}`}>
           {metaType.replace('_', ' ')}
         </span>
       </td>
 
-      {/* Source Repository (Clickable repository metadata details) */}
-      <td className="px-6 py-4.5 align-middle">
+      {/* Source Repository */}
+      <td className="px-4 py-3 align-middle">
         <div className="flex items-center gap-1.5 max-w-[200px]">
-          <GithubIcon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-          <span className={`text-sm font-semibold truncate ${isDeleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300'}`}>
+          <GithubIcon className="w-3.5 h-3.5 text-[#8B949E] flex-shrink-0" />
+          <span 
+            onClick={() => navigate(`/explorer/${id}`)}
+            className={`text-xs font-semibold truncate hover:underline hover:text-[#58A6FF] cursor-pointer ${isDeleted ? 'line-through text-[#8B949E]' : 'text-[#c9d1d9]'}`}
+          >
             {repoName}
           </span>
           {url && (
@@ -92,47 +96,48 @@ const DatasetTableRow = ({ dataset, onView, onEdit, onDelete, onRestore, isSelec
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-400 hover:text-brand-500 dark:hover:text-brand-400 transition-colors flex-shrink-0"
+              className="text-[#8B949E] hover:text-[#58A6FF] transition-colors flex-shrink-0"
               title="Open GitHub source"
+              onClick={(e) => e.stopPropagation()}
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3 h-3" />
             </a>
           )}
         </div>
       </td>
 
       {/* Target file location */}
-      <td className={`px-6 py-4.5 align-middle font-mono text-xs max-w-[140px] truncate ${isDeleted ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-400 dark:text-slate-500'}`} title={filePath}>
+      <td className={`px-4 py-3 align-middle font-mono text-[10px] max-w-[120px] truncate ${isDeleted ? 'line-through text-[#8B949E]/60' : 'text-[#8B949E]'}`} title={filePath}>
         {getFileDisplay()}
       </td>
 
       {/* Instruction preview snippet */}
-      <td className="px-6 py-4.5 align-middle">
-        <p className={`text-sm line-clamp-1 max-w-[320px] ${isDeleted ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-600 dark:text-slate-300'}`} title={instruction}>
+      <td className="px-4 py-3 align-middle">
+        <p className={`text-xs line-clamp-1 max-w-[280px] ${isDeleted ? 'line-through text-[#8B949E]/70' : 'text-[#c9d1d9]'}`} title={instruction}>
           {instruction}
         </p>
       </td>
 
       {/* Operations column */}
-      <td className="px-6 py-4.5 align-middle text-right">
-        <div className="flex items-center justify-end gap-2">
+      <td className="px-4 py-3 align-middle text-right">
+        <div className="flex items-center justify-end gap-1.5">
           {/* View Details */}
           <button
-            onClick={() => onView(dataset)}
-            className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg transition-all border border-slate-200/40 dark:border-dark-border/40 cursor-pointer"
-            title="View full record"
+            onClick={() => navigate(`/explorer/${id}`)}
+            className="p-1 rounded bg-[#21262D] text-[#8B949E] hover:text-[#58A6FF] border border-[#30363D] hover:border-[#8b949e] transition-colors cursor-pointer"
+            title="View details page"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5" />
           </button>
 
           {/* Restore action visible to admin users if deleted */}
           {user && user.role === 'admin' && isDeleted && (
             <button
               onClick={() => onRestore && onRestore(id)}
-              className="p-1.5 bg-slate-50 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg transition-all border border-slate-200/40 dark:border-dark-border/40 cursor-pointer"
+              className="p-1 rounded bg-[#21262D] text-[#3FB950] hover:bg-[#3FB950]/10 border border-[#30363D] transition-colors cursor-pointer"
               title="Restore record"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -141,17 +146,17 @@ const DatasetTableRow = ({ dataset, onView, onEdit, onDelete, onRestore, isSelec
             <>
               <button
                 onClick={() => onEdit(dataset)}
-                className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg transition-all border border-slate-200/40 dark:border-dark-border/40 cursor-pointer"
+                className="p-1 rounded bg-[#21262D] text-[#d29922] hover:text-amber-400 border border-[#30363D] transition-colors cursor-pointer"
                 title="Edit record"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => onDelete(id)}
-                className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition-all border border-slate-200/40 dark:border-dark-border/40 cursor-pointer"
+                className="p-1 rounded bg-[#21262D] text-[#F85149] hover:bg-rose-950/20 border border-[#30363D] transition-colors cursor-pointer"
                 title="Delete record"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </>
           )}

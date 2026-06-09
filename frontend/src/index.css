@@ -3,22 +3,34 @@
 
 @theme {
   --font-sans: 'Inter', sans-serif;
-  --font-heading: 'Outfit', sans-serif;
+  --font-heading: 'Inter', sans-serif;
 
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c084fc;
-  --color-brand-400: #a855f7;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
+  /* GitHub official colors mapping */
+  --color-gh-bg: #0D1117;
+  --color-gh-bg-secondary: #161B22;
+  --color-gh-card: #21262D;
+  --color-gh-border: #30363D;
+  --color-gh-text: #F0F6FC;
+  --color-gh-text-secondary: #8B949E;
+  --color-gh-blue: #58A6FF;
+  --color-gh-green: #3FB950;
+  --color-gh-red: #F85149;
+
+  /* Redefine brand and dark palettes to align with GitHub theme */
+  --color-brand-50: #f0f6fc;
+  --color-brand-100: #c9d1d9;
+  --color-brand-200: #8b949e;
+  --color-brand-300: #58a6ff;
+  --color-brand-400: #388bfd;
+  --color-brand-500: #58a6ff;
+  --color-brand-600: #1f6feb;
+  --color-brand-700: #1158c7;
+  --color-brand-800: #0d419e;
+  --color-brand-900: #0c2d6e;
   
-  --color-dark-bg: #0b0c10;
-  --color-dark-card: #131520;
-  --color-dark-border: #1e2238;
+  --color-dark-bg: #0D1117;
+  --color-dark-card: #161B22;
+  --color-dark-border: #30363D;
 }
 
 /* Custom Scrollbar */
@@ -37,11 +49,11 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #272a3d;
+  background: #30363D;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #58A6FF;
 }
 
 /* Global resets & smoothness */
@@ -58,7 +70,7 @@ html, body, #root {
 
 .dark html, .dark body, .dark #root {
   background-color: var(--color-dark-bg);
-  color: #f1f5f9;
+  color: #F0F6FC;
 }
 
 /* Custom animations and utilities */
@@ -67,8 +79,17 @@ html, body, #root {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .glassmorphism {
@@ -79,8 +100,44 @@ html, body, #root {
 }
 
 .dark .glassmorphism {
-  background: rgba(19, 21, 32, 0.7);
+  background: rgba(22, 27, 34, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 34, 56, 0.5);
+  border: 1px solid rgba(48, 54, 61, 0.6);
 }
+
+/* GitHub style button & card overrides */
+.github-card {
+  background-color: var(--color-gh-card);
+  border: 1px solid var(--color-gh-border);
+  border-radius: 6px;
+}
+
+.github-btn {
+  background-color: #21262D;
+  border: 1px solid #30363D;
+  color: #c9d1d9;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.github-btn:hover {
+  background-color: #30363D;
+  border-color: #8b949e;
+  color: #f0f6fc;
+}
+
+.github-btn-primary {
+  background-color: #238636;
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  color: #ffffff;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.github-btn-primary:hover {
+  background-color: #2ea043;
+}
+
