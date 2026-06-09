@@ -22,54 +22,59 @@ const CountUp = ({ end, duration = 800 }) => {
 
 const StatCard = ({ title, value, icon: Icon, color = 'brand', description, loading }) => {
   const colorMap = {
-    brand: 'bg-brand-500/10 text-brand-600 dark:text-brand-400 border-brand-500/20',
-    purple: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-    emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-    blue: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-    rose: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
-    amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-    cyan: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
-    indigo: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-    pink: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20',
-    orange: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+    brand: 'text-[#58A6FF] border-[#58A6FF]/20 bg-[#58A6FF]/5',
+    purple: 'text-[#bc8cff] border-[#bc8cff]/20 bg-[#bc8cff]/5',
+    emerald: 'text-[#3FB950] border-[#3FB950]/20 bg-[#3FB950]/5',
+    blue: 'text-[#58A6FF] border-[#58A6FF]/20 bg-[#58A6FF]/5',
+    rose: 'text-[#F85149] border-[#F85149]/20 bg-[#F85149]/5',
+    amber: 'text-[#d29922] border-[#d29922]/20 bg-[#d29922]/5',
+    cyan: 'text-[#39c5cf] border-[#39c5cf]/20 bg-[#39c5cf]/5',
+    indigo: 'text-[#bc8cff] border-[#bc8cff]/20 bg-[#bc8cff]/5',
+    pink: 'text-[#ff7b72] border-[#ff7b72]/20 bg-[#ff7b72]/5',
+    orange: 'text-[#f0883e] border-[#f0883e]/20 bg-[#f0883e]/5',
   };
 
   const selectedColor = colorMap[color] || colorMap.brand;
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-dark-card border border-slate-200/60 dark:border-dark-border/60 p-6 rounded-2xl shadow-sm flex flex-col justify-between h-36 animate-pulse">
+      <div className="bg-[#21262D] border border-[#30363D] p-5 rounded-xl flex flex-col justify-between h-32 animate-pulse">
         <div className="flex justify-between items-start">
-          <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-2/3" />
-          <div className="h-10 w-10 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          <div className="h-4 bg-[#30363D] rounded w-2/3" />
+          <div className="h-8 w-8 bg-[#30363D] rounded-lg" />
         </div>
         <div className="space-y-2">
-          <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/2" />
-          <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
+          <div className="h-6 bg-[#30363D] rounded w-1/2" />
+          <div className="h-3 bg-[#30363D] rounded w-3/4" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-dark-card border border-slate-200/60 dark:border-dark-border/60 p-6 rounded-2xl shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 flex flex-col justify-between h-36 group">
+    <div className="bg-[#21262D] border border-[#30363D] p-5 rounded-xl hover:border-[#8b949e] transition-all duration-200 flex flex-col justify-between h-32 group relative shadow-sm">
+      
+      {/* Decorative tiny top border highlight on hover */}
+      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl bg-[#58A6FF] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
       <div className="flex justify-between items-start">
-        <span className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
+        <span className="text-[11px] font-bold text-[#8B949E] uppercase tracking-wider group-hover:text-[#F0F6FC] transition-colors select-none">
           {title}
         </span>
-        <div className={`p-2.5 rounded-xl border ${selectedColor} transition-transform duration-300 group-hover:scale-110`}>
-          {Icon && <Icon className="w-5 h-5" />}
+        <div className={`p-2 rounded-lg border ${selectedColor} transition-transform duration-200 group-hover:scale-105`}>
+          {Icon && <Icon className="w-4 h-4" />}
         </div>
       </div>
       
-      <div>
-        <h3 className="text-3xl font-extrabold tracking-tight">
+      <div className="mt-2">
+        <h3 className="text-2xl font-bold tracking-tight text-[#F0F6FC] font-mono leading-none">
           <CountUp end={value} />
         </h3>
         {description && (
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">{description}</p>
+          <p className="text-[10px] text-[#8B949E] mt-1.5 font-medium truncate" title={description}>{description}</p>
         )}
       </div>
+
     </div>
   );
 };

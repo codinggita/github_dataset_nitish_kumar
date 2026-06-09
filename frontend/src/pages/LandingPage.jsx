@@ -20,7 +20,8 @@ const LandingPage = () => {
   const [apiStatus, setApiStatus] = useState('checking');
 
   useEffect(() => {
-    fetch('https://github-dataset-backend-vokd.onrender.com/api/v1/system/health')
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+    fetch(`${baseUrl}/system/health`)
       .then((res) => {
         if (res.ok) return res.json();
         throw new Error('API down');

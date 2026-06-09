@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFilter, resetFilters, fetchDatasets } from '../store/datasetSlice';
-import { Filter, Trash2, ChevronRight, Sliders } from 'lucide-react';
+import { setFilter, resetFilters } from '../store/datasetSlice';
+import { Trash2, Sliders } from 'lucide-react';
 
 const FilterSidebar = () => {
   const dispatch = useDispatch();
@@ -102,17 +102,17 @@ const FilterSidebar = () => {
   const hasActiveFilters = Object.values(filters).some((val) => val !== '');
 
   return (
-    <div className="w-full lg:w-64 bg-white dark:bg-dark-card border border-slate-200/60 dark:border-dark-border/60 p-5 rounded-3xl shadow-sm space-y-5 h-fit">
+    <div className="w-full lg:w-64 bg-[#161B22] border border-[#30363D] p-5 rounded-xl space-y-5 h-fit shadow-sm">
       {/* Title */}
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-dark-border pb-3">
-        <div className="flex items-center gap-2 font-bold text-sm text-slate-800 dark:text-slate-200">
-          <Sliders className="w-4 h-4 text-brand-500" />
-          Filter Options
+      <div className="flex items-center justify-between border-b border-[#30363D] pb-3">
+        <div className="flex items-center gap-2 font-bold text-xs text-[#F0F6FC]">
+          <Sliders className="w-4 h-4 text-[#58A6FF]" />
+          Filter Repositories
         </div>
         {hasActiveFilters && (
           <button
             onClick={handleClearAll}
-            className="text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+            className="text-xs text-[#F85149] hover:text-[#ff7b72] font-bold flex items-center gap-1 cursor-pointer transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Clear
@@ -120,9 +120,9 @@ const FilterSidebar = () => {
         )}
       </div>
 
-      {/* Repository search (Custom type-in filter) */}
+      {/* Repository search */}
       <div className="space-y-1.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-[#8B949E]">
           Source Repository
         </label>
         <div className="relative">
@@ -131,7 +131,7 @@ const FilterSidebar = () => {
             placeholder="e.g. pytorch/pytorch"
             value={filters.repo}
             onChange={(e) => handleFilterChange('repo', e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-dark-border rounded-xl text-xs outline-none focus:border-brand-500 transition-colors"
+            className="w-full px-3 py-2 bg-[#0D1117] border border-[#30363D] rounded-lg text-xs text-[#F0F6FC] placeholder-[#8B949E] outline-none focus:border-[#58A6FF] transition-all font-semibold"
           />
         </div>
       </div>
@@ -140,16 +140,16 @@ const FilterSidebar = () => {
       <div className="space-y-4">
         {filterSections.map((section) => (
           <div key={section.name} className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-[#8B949E]">
               {section.label}
             </label>
             <select
               value={filters[section.name]}
               onChange={(e) => handleFilterChange(section.name, e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-dark-border rounded-xl text-xs outline-none text-slate-700 dark:text-slate-300 focus:border-brand-500 transition-colors cursor-pointer capitalize"
+              className="w-full px-3 py-2 bg-[#0D1117] border border-[#30363D] rounded-lg text-xs outline-none text-[#c9d1d9] focus:border-[#58A6FF] transition-colors cursor-pointer capitalize font-semibold"
             >
               {section.options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-[#161B22]">
                   {opt.label}
                 </option>
               ))}

@@ -1,7 +1,7 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const datasetController = require('../controllers/datasetController');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, restrictTo } = require('../middlewares/authMiddleware');
 const { authLimiter } = require('../middlewares/rateLimiter');
 
 const router = express.Router();
@@ -50,13 +50,13 @@ router.post('/change-password', protect, authController.changePassword);
 
 // Admin-only User CRUD Routes (Role-Based Access Control)
 router.route('/users')
-  .get(protect, authController.restrictTo('admin'), authController.getAllUsers)
-  .post(protect, authController.restrictTo('admin'), authController.createUser)
+  .get(protect, restrictTo('admin'), authController.getAllUsers)
+  .post(protect, restrictTo('admin'), authController.createUser)
   .options(datasetController.optionsHelper(['GET', 'POST', 'OPTIONS']));
 
 router.route('/users/:id')
-  .patch(protect, authController.restrictTo('admin'), authController.updateUserByAdmin)
-  .delete(protect, authController.restrictTo('admin'), authController.deleteUserByAdmin)
+  .patch(protect, restrictTo('admin'), authController.updateUserByAdmin)
+  .delete(protect, restrictTo('admin'), authController.deleteUserByAdmin)
   .options(datasetController.optionsHelper(['PATCH', 'DELETE', 'OPTIONS']));
 
 module.exports = router;
