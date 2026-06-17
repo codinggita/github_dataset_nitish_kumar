@@ -41,7 +41,6 @@ github_dataset_nitish_kumar/
 │   │   └── index.css           # Styling directives and custom Tailwind variables
 │   ├── package.json            # Frontend script actions configuration
 │   └── vite.config.js          # Vite HMR compiling configs
-├── ReadmeRule.md               # Backend checklist specification guide
 └── README.md                   # 🌟 Root repository entrypoint & roadmap (this file)
 ```
 
@@ -69,7 +68,7 @@ npm run dev
 
 # 📋 Full-Stack Development Checklist (Rubric Roadmap)
 
-This section maps our implementation status against the project criteria specified in [ReadmeRule.md](file:///c:/Users/LOQ/OneDrive/Desktop/Full%20stack%20projects/github_dataset_nitish_kumar/ReadmeRule.md). All checklist targets have been completed, verified, and integrated.
+This section maps our implementation status against the project criteria specified in the backend development checklist. All checklist targets have been completed, verified, and integrated.
 
 ---
 
